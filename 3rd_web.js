@@ -1,13 +1,18 @@
 (function () {
-  console.log('运行在第三方：web脚本')
-  if (!window['__FROMOPENUGC__']) return console.log('不是从主站启动的，忽略执行');
+  // 调试输出，如果链接中有debug标志则输出
+  const log = function () {
+    if (!location.href.includes('debug')) return;
+    console.log('[3rd_web]', ...arguments);
+  }
+  log('运行在第三方：web脚本', window['__FROMOPENUGC__'])
+  if (!window['__FROMOPENUGC__']) return log('不是从主站启动的，忽略执行');
 
   // 提供给main站点的网页API调用
 
   const MAIN_MSG_CALLBACKS = new Map();
 
   window.addEventListener('message', ({ data }) => {
-    // console.log('web.msg', data);
+    // log('web.msg', data);
     if (typeof data !== 'object') return;
     const { from, hash, result, act, runHash } = data;
     if (from !== 'contentjs') return;
@@ -81,23 +86,9 @@
     try {
       const server = new Function(`return ${js};`)();
       window.MCPSERVER = server;
-      SendPayload('regMcpServer', JSON.stringify(server)).then(console.log);
+      SendPayload('regMcpServer', JSON.stringify(server)).then(log);
     } catch (e) {
-      console.log('create mcp server fail:', e)
+      log('create mcp server fail:', e)
     }
   })
-
-
-  // 设置页面跳转前提示
-  // 监听 beforeunload 事件
-  window.addEventListener('beforeunload', function (event) {
-    // 设置提示消息
-    const message = "确定要断开OPENUGC的服务链接吗？";
-
-    // 设置 event.returnValue 是为了兼容某些浏览器
-    event.returnValue = message;
-
-    // 返回提示消息
-    return message;
-  });
 })();

@@ -1,0 +1,29 @@
+{
+  "name": "今日头条搜索",
+  "version": "0.7.2",
+  "description": "今日头条插件服务，提供资讯内容搜索等工具",
+  "endpoint": "https://so.toutiao.com/openugc",
+  "favicon": "https://so.toutiao.com/favicon.ico",
+  "id": "so.toutiao.com",
+  "tools": [
+    {
+      "name": "搜索头条资讯",
+      "description": "使用关键词搜索相关头条资讯列表",
+      "args": {
+        "keyword": {
+          "type": "string",
+          "default": "",
+          "description": "要搜索的关键词",
+          "required": true
+        },
+        "count": {
+          "type": "number",
+          "default": 10,
+          "description": "要获取的搜索结果数量"
+        }
+      },
+      "execute": "async (args) => {\n  let { keyword, count }= args;\n  count = count ? count : 10;\n  const search = async(page = 1) => new Promise((RES, REJ) => {\n    // const url = `https://cn.bing.com/search?q=${encodeURIComponent(keyword)}&first=${(page - 1) * 10}`;\n    const url = `https://so.toutiao.com/search?dvpf=pc&source=search_subtab_switch&keyword=${encodeURIComponent(keyword)}&pd=information&action_type=search_subtab_switch&page_num=${page - 1}&search_id=&from=news&cur_tab_title=news`;\n    const dom = document.createElement('iframe');\n    dom.style = 'display:none';\n    dom.src = url;\n    dom.onload = () => {\n      try {\n        const _result = Array.from(dom.contentDocument.querySelectorAll('[data-i]')).map(d => ({\n          title: d.querySelector('.cs-header > div > a').innerText,\n          desc: d.querySelector('.cs-text > div > span').innerText,\n          link: decodeURIComponent(d.querySelector('.cs-header > div > a').href.split('url=')[1]),\n          info: d.querySelector('.cs-source-content').innerText\n        }));\n        dom.remove();\n        return RES(_result);\n      } catch(e) {\n        REJ(`解析数据失败：${e.message}`);\n      }\n    };\n    dom.onerror = REJ;\n    document.body.appendChild(dom);\n  });\n  const sleep = async(t = 1000) => new Promise(RES => setTimeout(RES, t));\n  return new Promise(async (RES, REJ) => {\n    let result = [];\n    let currentPage = 1;\n    while (count > result.length) {\n      let data;\n      try {\n        data = await search(currentPage);\n      } catch(e) {\n        return RES(e.message);\n      }\n      result = result.concat(data);\n      if (result.length >= count) {\n        RES(result.slice(0, count));\n        break;\n      }\n      currentPage += 1;\n      await sleep();\n    }\n  });\n}"
+    }
+  ],
+  "hookJs": "window.onload = () => {\n  document.title = '🤖 今日头条搜索';\n  document.body.innerText = '[今日头条] OPENUGC使用中';\n}"
+}

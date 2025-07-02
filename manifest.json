@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "OPENUGC",
-  "version": "0.6.10",
+  "version": "0.7.1",
   "description": "AI驱动的一站式内容管理平台",
-  "homepage_url": "https://chat.openugc.com",
+  "homepage_url": "https://openugc.com",
   "permissions": [
     "activeTab",
     "scripting",
@@ -13,6 +13,7 @@
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
+  "options_page": "dist/index.html",
   "icons": {
     "16": "icons/16.png",
     "32": "icons/32.png",
@@ -29,7 +30,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://chat.openugc.com/*"
+        "https://chat.openugc.com/*",
+        "http://192.168.1.25:*/*"
       ],
       "js": [
         "main_content.js"
@@ -37,7 +39,8 @@
     },
     {
       "matches": [
-        "https://chat.openugc.com/*"
+        "https://chat.openugc.com/*",
+        "http://192.168.1.25:*/*"
       ],
       "js": [
         "main_web.js"
@@ -53,7 +56,8 @@
         "3rd_content.js"
       ],
       "exclude_matches": [
-        "https://chat.openugc.com/*"
+        "https://chat.openugc.com/*",
+        "http://192.168.1.25:*/*"
       ]
     },
     {
@@ -66,7 +70,8 @@
       "run_at": "document_start",
       "world": "MAIN",
       "exclude_matches": [
-        "https://chat.openugc.com/*"
+        "https://chat.openugc.com/*",
+        "http://192.168.1.25:*/*"
       ]
     }
   ]

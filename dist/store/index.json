@@ -1,0 +1,49 @@
+[
+  {
+    "id": "doc.openugc.com",
+    "name": "插件服务示例",
+    "develop": true,
+    "description": "演示插件服务是如何工作的，你可以安装之后进行查看、编辑提示词、工具等操作",
+    "favicon": "https://doc.openugc.com/favicon.png",
+    "version": "0.6.20",
+    "install": "/store/doc.openugc.com.json"
+  },
+  {
+    "id": "weixin.sogou.com",
+    "name": "微信搜狗",
+    "version": "0.6.20",
+    "description": "搜索微信公众平台内容",
+    "favicon": "https://weixin.sogou.com/favicon.ico",
+    "install": "/store/weixin.sogou.com.json"
+  },
+  {
+    "id": "www.baidu.com",
+    "name": "百度一下",
+    "version": "0.6.24",
+    "favicon": "https://www.baidu.com/favicon.ico",
+    "description": "提供百度网站的工具调用",
+    "install": "/store/www.baidu.com.json"
+  }, {
+    "name": "今日头条",
+    "version": "0.6.23",
+    "description": "头条内容阅读等服务",
+    "endpoint": "https://www.toutiao.com/",
+    "favicon": "https://so.toutiao.com/favicon.ico",
+    "id": "www.toutiao.com",
+    "install": "/store/www.toutiao.com.json"
+  }, {
+    "name": "今日头条搜索",
+    "version": "0.7.2",
+    "description": "今日头条插件服务，提供资讯内容搜索等工具",
+    "favicon": "https://so.toutiao.com/favicon.ico",
+    "id": "so.toutiao.com",
+    "install": "/store/so.toutiao.com.json"
+  }, {
+    "name": "微软Bing",
+    "version": "0.7.2",
+    "description": "cn.bing.com网页的插件服务，提供搜索、热点等工具",
+    "favicon": "https://cn.bing.com/favicon.ico",
+    "id": "cn.bing.com",
+    "install": "/store/cn.bing.com.json"
+  }
+]

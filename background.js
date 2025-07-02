@@ -255,7 +255,7 @@
           },
           condition: {
             urlFilter: "*://*/*",
-            initiatorDomains: ["chat.openugc.com"],
+            initiatorDomains: ["chat.openugc.com","192.168.1.25"],
             resourceTypes: ["main_frame", "sub_frame", "xmlhttprequest"]
           }
         }
@@ -266,7 +266,8 @@
 
   // tab事件，点击后打开主站
   chrome.action.onClicked.addListener(function (tab) {
-    const homepageUrl = "https://chat.openugc.com";
+    return chrome.runtime.openOptionsPage();
+    const homepageUrl = "http://192.168.1.25:5173";
 
     // 检查是否已经打开了指定的主页
     chrome.tabs.query({ url: homepageUrl + '/*' }, function (tabs) {

@@ -1,0 +1,41 @@
+{
+  "name": "百度一下",
+  "version": "0.6.24",
+  "description": "提供百度网站的工具调用",
+  "endpoint": "https://www.baidu.com",
+  "favicon": "https://www.baidu.com/favicon.ico",
+  "id": "www.baidu.com",
+  "tools": [
+    {
+      "name": "百度搜索",
+      "description": "根据用户的关键词进行百度搜索，并获取搜索的结果列表（包含标题title、简介desc、链接link）的JSON数组数据",
+      "args": {
+        "keyword": {
+          "type": "string",
+          "default": "",
+          "description": "要搜索的关键词",
+          "required": true
+        },
+        "count": {
+          "type": "number",
+          "default": 5,
+          "description": "要搜索的结果数量，默认5个"
+        }
+      },
+      "execute": "async (args) => {\n  let { keyword, count }= args;\n  count = count ? count : 5;\n  const baiduSearch = async(page = 1) => new Promise((RES, REJ) => {\n    console.log('baidusearch:', keyword, page)\n    // 超时处理\n    const timer = setTimeout(async () => {\n      console.log('超时了，重试中');\n      const result = await baiduSearch(page);\n      return RES(result);\n    }, 1000 * 30); // 30s\n    const url = `https://www.baidu.com/s?wd=${encodeURIComponent(keyword)}&pn=${page * 10}`;\n    const dom = document.createElement('iframe');\n    dom.style = 'display:none';\n    dom.src = url;\n    dom.onload = () => {\n      console.log('加载完成，开始解析数据')\n      clearTimeout(timer);\n      try {\n        const _result = Array.from(dom.contentDocument.querySelectorAll('.result')).map(dom => ({\n          title: dom.querySelector('h3').innerText.trim(),\n          desc: dom.querySelector('[data-module=\"abstract\"]').innerText.trim(),\n          link: dom.getAttribute('mu').trim()\n        }));\n        dom.remove();\n        return RES(_result);\n      } catch(e) {\n        REJ(`解析数据失败：${e.message}`);\n      }\n    };\n    dom.onerror = REJ;\n    document.body.appendChild(dom);\n  });\n  const sleep = async(t = 1000) => new Promise(RES => setTimeout(RES, t));\n  return new Promise(async (RES, REJ) => {\n    let result = [];\n    let currentPage = 1;\n    while (count > result.length) {\n      let data;\n      try {\n        data = await baiduSearch(currentPage);\n      } catch(e) {\n        return RES(e.message);\n      }\n      result = result.concat(data);\n      if (result.length >= count) {\n        RES(result.slice(0, count));\n        break;\n      }\n      currentPage += 1;\n      await sleep();\n    }\n  });\n}"
+    },
+    {
+      "name": "百度热搜",
+      "description": "获取现在百度热搜榜单，包含关键词、搜索指数的JSON数据",
+      "args": {
+        "count": {
+          "type": "number",
+          "default": 10,
+          "description": "要获取的热搜数量，默认10条，最多50条"
+        }
+      },
+      "execute": "async (args) => {\n  return JSON.parse(document.querySelector('#hotsearch_data').innerText).hotsearch.slice(0, args.count || 10).map(h => ({\n    title: h.card_title,\n    score: h.heat_score\n  }));\n}"
+    }
+  ],
+  "hookJs": ""
+}

@@ -1,0 +1,36 @@
+{
+  "name": "OPENUGC文档",
+  "version": "0.6.20",
+  "develop": true,
+  "description": "OPENUGC的插件服务示例。你可以通过编辑该插件的信息、工具等，来学习如何自定义创建一个专属的插件！",
+  "endpoint": "https://doc.openugc.com",
+  "favicon": "https://doc.openugc.com/favicon.png",
+  "id": "doc.openugc.com",
+  "tools": [
+    {
+      "name": "获取标题",
+      "description": "获取当前页面的标题",
+      "args": {},
+      "execute": "async(args) => {\n  // ------------\n  // 执行代码就是一个异步的js函数（在目标网页里执行）\n  // 并接收一个args对象参数，你可以通过如args['name']来获取参数\n  // ------------\n  // 你可以在这里使用await 方法进行等待其他异步操作\n  // 只需要返回文本string类型内容即可\n  return document.title;\n}"
+    },
+    {
+      "name": "获取更新日志",
+      "description": "获取OPENUGC最近的更新日志内容",
+      "args": {},
+      "execute": "async(args) => {\n    return new Promise(res => {\n        const dom = document.createElement('iframe');\n        dom.style.display = 'none';\n        dom.src='https://doc.openugc.com/changelog/';\n        dom.onload = () => {\n            const data = dom.contentDocument.querySelector('main').innerText.trim();\n            dom.remove();\n            return res(data);\n        };\n        document.body.appendChild(dom);\n    });\n}"
+    },
+    {
+      "name": "获取使用说明",
+      "description": "获取OPENUGC的安装使用说明",
+      "args": {
+        "markdown": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否需要markdown格式的完整文档内容"
+        }
+      },
+      "execute": "async (args) => {\n  const { markdown } = args;\n  if (markdown) {\n    const data = await fetch('https://r.jina.ai/https://doc.openugc.com/getting-started/').then(r => r.text());\n    return data;\n  }\n  return new Promise(res => {\n    const dom = document.createElement('iframe');\n    dom.style.display = 'none';\n    dom.src = 'https://doc.openugc.com/getting-started/';\n    dom.onload = () => {\n      const data = dom.contentDocument.querySelector('main').innerText.trim();\n      dom.remove();\n      return res(data);\n    };\n    document.body.appendChild(dom);\n  });\n}"
+    }
+  ],
+  "hookJs": "console.log(`hookjs在document_start执行，适用于高级用法。普通插件无需设置`)"
+}

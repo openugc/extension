@@ -1,0 +1,43 @@
+{
+  "name": "微软Bing",
+  "version": "0.7.2",
+  "description": "cn.bing.com网页的插件服务，提供搜索、热点等工具",
+  "endpoint": "https://cn.bing.com/rp/ZDuP1RxmIvW4zmuvz53att_oXdo.br.js?from=openugc.com",
+  "favicon": "https://cn.bing.com/favicon.ico",
+  "prompts": "",
+  "id": "cn.bing.com",
+  "tools": [
+    {
+      "name": "Bing搜索",
+      "description": "根据用户的关键词，使用Bing进行搜索，并返回搜索结果列表",
+      "args": {
+        "keyword": {
+          "type": "string",
+          "default": "",
+          "description": "搜索的关键词",
+          "required": true
+        },
+        "count": {
+          "type": "number",
+          "default": 10,
+          "description": "搜索的结果数量"
+        }
+      },
+      "execute": "async (args) => {\n  let { keyword, count }= args;\n  count = count ? count : 10;\n  const search = async(page = 1) => new Promise((RES, REJ) => {\n    const url = `https://cn.bing.com/search?q=${encodeURIComponent(keyword)}&first=${(page - 1) * 10}`;\n    const dom = document.createElement('iframe');\n    dom.style = 'display:none';\n    dom.src = url;\n    dom.onload = () => {\n      try {\n        const _result = [];\n        Array.from(dom.contentDocument.querySelectorAll('.b_algo')).map(d => {\n          try {\n            _result.push({\n              title: d.querySelector('h2').innerText.trim(),\n              desc: d.querySelector('.b_caption').innerText.trim(),\n              link: d.querySelector('a').href\n            });\n          } catch(e) {\n            console.log('解析失败：', d, e)\n          }\n        });\n        dom.remove();\n        return RES(_result);\n      } catch(e) {\n        REJ(`解析数据失败：${e.message}`);\n      }\n    };\n    dom.onerror = REJ;\n    document.body.appendChild(dom);\n  });\n  const sleep = async(t = 1000) => new Promise(RES => setTimeout(RES, t));\n  return new Promise(async (RES, REJ) => {\n    let result = [];\n    let currentPage = 1;\n    while (count > result.length) {\n      let data;\n      try {\n        data = await search(currentPage);\n      } catch(e) {\n        return RES(e.message);\n      }\n      result = result.concat(data);\n      if (result.length >= count) {\n        RES(result.slice(0, count));\n        break;\n      }\n      currentPage += 1;\n      await sleep();\n    }\n  });\n}"
+    },
+    {
+      "name": "必应热点",
+      "description": "获取必应热点列表",
+      "args": {
+        "count": {
+          "type": "number",
+          "default": 10,
+          "description": "获取的热点条数",
+          "required": true
+        }
+      },
+      "execute": "async (args) => {\n    const data = await fetch('https://cn.bing.com/hp/api/v1/carousel?&format=json&ecount=20&efirst=0&&ecount=24&efirst=0&features=tobads&ads=1&features=tobcnads').then(r => r.json());\n    const result = data.data[0].items.map(x => ({\n        title: x.title,\n        image: x.imageUrl,\n        // url: x.url\n    }));\n    const count = args['count'] || result.length;\n    return result.slice(0, count);\n}"
+    }
+  ],
+  "hookJs": "window.onload = () => {\n  history.replaceState({}, \"\", \"/openugc.com\");\n  document.title = '✌️ OPENUGC 使用中！';\n  document.body.innerHTML = `<a href=\"https://doc.openugc.com\" target=\"_blank\">OPENUGC已成功链接BING！</a>`;\n}"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "搜狗微信",
+  "version": "0.6.20",
+  "description": "搜索微信公众平台内容",
+  "endpoint": "https://weixin.sogou.com/",
+  "favicon": "https://weixin.sogou.com/favicon.ico",
+  "id": "weixin.sogou.com",
+  "tools": [
+    {
+      "name": "搜索微信公众号文章",
+      "description": "使用用户提供的关键词进行微信公众号文章搜索，返回搜索的结果列表，包含标题、简介、链接、作者、发布时间信息（JSON）",
+      "args": {
+        "keyword": {
+          "type": "string",
+          "default": "",
+          "description": "要搜索的关键词",
+          "required": true
+        },
+        "page": {
+          "type": "number",
+          "default": 1,
+          "description": "要获取的搜索结果的页数，默认1。每页最多返回10条数据",
+          "required": true
+        }
+      },
+      "execute": "async (args) => {\n  function parseHTML(htmlString) {\n    // 创建一个新的DOMParser实例\n    const parser = new DOMParser();\n    // 将HTML字符串解析为文档对象\n    const doc = parser.parseFromString(htmlString, 'text/html');\n    return doc;\n  }\n\n  function extractData(htmlString) {\n    // 解析HTML字符串为DOM结构\n    const doc = parseHTML(htmlString);\n    let result = [];\n    // 选择所有新闻列表项\n    let newsList = doc.querySelectorAll('.news-list li');\n    newsList.forEach(item => {\n      // 提取标题\n      let title = item.querySelector('h3 a').textContent;\n      // 提取简介\n      let summary = item.querySelector('.txt-info').textContent;\n      // 提取作者\n      let author = item.querySelector('.all-time-y2').textContent;\n      // 提取发布时间\n      let time = item.querySelector('.s2 script').textContent.match(/timeConvert\\('(\\d+)'\\)/)[1];\n      // 提取链接\n      let link = item.querySelector('h3 a').getAttribute('href');\n      // 将提取的数据存储到结果数组中\n      result.push({\n        title: title,\n        summary: summary,\n        author: author,\n        time: time,\n        link: link\n      });\n    });\n    // 将结果数组转换为JSON格式的字符串\n    return result;\n    // return JSON.stringify(result, null, 4);\n  }\n  const parseLink = async (data) => {\n    console.log('parse link:', data);\n    const html = await fetch(data).then(r => r.text());\n    const js = html.split('setTimeout(function () {')[1].split('window.location')[0].trim();\n    const result = eval(js);\n    console.log('result:', result);\n    return result;\n  }\n\n  try {\n    const html = await fetch(`https://weixin.sogou.com/weixin?type=2&s_from=input&page=${args['page'] || 1}&query=` + encodeURIComponent(args.keyword)).then(r => r.text());\n    const result = extractData(html);\n    for (let i = 0; i < result.length; i++) {\n      const r = result[i];\n      if (r['link'].startsWith('/')) {\n        r['link'] = await parseLink(r['link']);\n      }\n      r['time'] = new Date(parseInt(r['time']) * 1000).toLocaleString();\n    }\n    return JSON.stringify(result);\n  } catch(e) {\n    return `搜索失败了，可能是遇到了验证码！请手动前往weixin.sogou.com搜索，过验证码之后可继续使用！错误信息：${e.message}`;\n  }\n}"
+    }
+  ]
+}
